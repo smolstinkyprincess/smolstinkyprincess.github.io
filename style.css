@@ -76,6 +76,8 @@ img, svg { display: block; max-width: 100%; }
 }
 
 .wrap {
+  position: relative;
+  z-index: 1; /* keep content above the drifting sky */
   width: min(1080px, 100% - 2.5rem);
   margin-inline: auto;
 }
@@ -571,6 +573,15 @@ section { position: relative; }
 }
 
 .sticker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  width: 64px;
+  text-align: center;
+}
+
+.sticker-icon {
   width: 52px; height: 52px;
   display: grid;
   place-items: center;
@@ -581,8 +592,14 @@ section { position: relative; }
   box-shadow: var(--shadow-soft);
   transition: transform 0.4s var(--bounce);
 }
-.sticker:nth-child(even) { border-color: var(--powder-blue); }
-.sticker:hover { transform: scale(1.18) rotate(10deg); }
+.sticker:nth-child(even) .sticker-icon { border-color: var(--powder-blue); }
+.sticker:hover .sticker-icon { transform: scale(1.18) rotate(10deg); }
+
+.sticker-label {
+  font-size: 0.72rem;
+  line-height: 1.2;
+  opacity: 0.8;
+}
 
 .toolkit-title {
   font-family: var(--font-display);
@@ -635,6 +652,137 @@ section { position: relative; }
   list-style: none;
 }
 
+/* ============================================================
+   🖼️ screenshots on the project cards
+   ============================================================ */
+.shots { margin: -0.2rem 0 1.1rem; }
+
+.shot {
+  display: block;
+  padding: 0;
+  border: 4px solid var(--card-solid);
+  border-radius: var(--radius-sm);
+  background: var(--card-solid);
+  box-shadow: var(--shadow-soft);
+  overflow: hidden;
+  cursor: zoom-in;
+  transition: transform 0.4s var(--bounce), box-shadow 0.3s ease;
+}
+.shot img { display: block; width: 100%; height: auto; }
+.shot:hover, .shot:focus-visible { box-shadow: var(--shadow-plush-hover); }
+
+/* one wide dashboard shot */
+.shots--wide .shot { width: 100%; border-color: var(--powder-blue); }
+.shots--wide .shot:hover { transform: translateY(-3px) rotate(-1deg); }
+
+/* a little fanned stack of phone screens */
+.shots--stack {
+  display: flex;
+  justify-content: center;
+  padding: 0.6rem 0 0.2rem;
+}
+.shots--stack .shot {
+  width: 86px;
+  border-color: var(--whisper-pink);
+  border-radius: 12px;
+  margin-inline: -10px;
+}
+.shots--stack .shot:nth-child(1) { transform: rotate(-9deg) translateY(6px); }
+.shots--stack .shot:nth-child(2) { transform: rotate(0deg); z-index: 1; border-color: var(--powder-blue); }
+.shots--stack .shot:nth-child(3) { transform: rotate(9deg) translateY(6px); }
+.shots--stack:hover .shot { margin-inline: 4px; }
+.shots--stack:hover .shot:nth-child(1) { transform: rotate(-4deg); }
+.shots--stack:hover .shot:nth-child(3) { transform: rotate(4deg); }
+.shots--stack:hover .shot:nth-child(n):hover { transform: scale(1.08) rotate(0deg); z-index: 2; }
+.shots--stack .shot { transition: transform 0.4s var(--bounce), margin 0.4s var(--bounce), box-shadow 0.3s ease; }
+
+/* tap-to-enlarge */
+.lightbox {
+  margin: auto;
+  padding: 0;
+  border: 6px solid var(--card-solid);
+  border-radius: var(--radius-md);
+  background: var(--card-solid);
+  box-shadow: var(--shadow-plush-hover);
+  max-width: min(92vw, 1200px);
+  max-height: 90vh;
+  overflow: visible;
+}
+.lightbox::backdrop { background: rgba(244, 235, 253, 0.75); backdrop-filter: blur(4px); }
+.lightbox img { display: block; max-width: 100%; max-height: calc(90vh - 12px); border-radius: var(--radius-sm); }
+.lightbox-close {
+  position: absolute;
+  top: -14px; right: -14px;
+  width: 36px; height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #FFD3E1, var(--strawberry-milk));
+  color: var(--cocoa);
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: var(--shadow-soft);
+}
+
+/* ============================================================
+   🌈 drifting sky (fixed layer under the content, over section colors)
+   ============================================================ */
+@keyframes tint-shift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes sprinkle-fall {
+  0%   { transform: translateY(-10vh) rotate(0deg); opacity: 0; }
+  10%  { opacity: 0.45; }
+  90%  { opacity: 0.45; }
+  100% { transform: translateY(110vh) rotate(160deg); opacity: 0; }
+}
+
+.sky {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.sky-tint {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, var(--whisper-pink), var(--lavender-haze), var(--powder-blue), #FFF6D6, var(--whisper-pink));
+  background-size: 400% 400%;
+  mix-blend-mode: multiply;
+  opacity: 0.35;
+  animation: tint-shift 30s ease-in-out infinite;
+}
+
+.sky-cloud {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--w);
+  opacity: 0.55;
+  will-change: transform;
+}
+.sky-cloud svg {
+  display: block;
+  width: 100%;
+  aspect-ratio: 140 / 80;
+  filter: drop-shadow(0 6px 10px rgba(185, 195, 245, 0.3));
+}
+
+.sprinkle {
+  position: absolute;
+  top: 0;
+  left: var(--x);
+  font-size: 0.9rem;
+  color: var(--strawberry-milk);
+  opacity: 0;
+  animation: sprinkle-fall var(--d) linear var(--delay) infinite;
+}
+.sprinkle:nth-child(even) { color: var(--periwinkle); }
+
 /* back-to-top cloud */
 .to-top {
   position: fixed;
@@ -680,6 +828,7 @@ section { position: relative; }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
+  .sprinkle { display: none; }
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
