@@ -17,15 +17,16 @@
     fortunes[Math.floor(Math.random() * fortunes.length)];
 
   // latest Mochibun release tag (static text in the HTML stays as the fallback)
-  const versionTag = document.getElementById('latest-version-tag');
-  if (versionTag) {
+  const versionTags = document.querySelectorAll('[data-latest-version]');
+  if (versionTags.length) {
     fetch('https://api.github.com/repos/smolstinkyprincess/Mochibun/releases/latest', {
       headers: { Accept: 'application/vnd.github+json' },
     })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data && typeof data.tag_name === 'string' && data.tag_name.trim()) {
-          versionTag.textContent = data.tag_name.trim();
+          const tag = data.tag_name.trim();
+          versionTags.forEach((el) => { el.textContent = tag; });
         }
       })
       .catch(() => {});
